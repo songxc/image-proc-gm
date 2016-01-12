@@ -1,7 +1,7 @@
 var Express = require('express');
 var Router = Express.Router();
 var ModGenThumb = require('../mods/blur/index');
-var ModDownload = require('../mods/common/download');
+var MyDownload = require('../common/download');
 
 Router.get('/', function(req, res) {
   // 回调名
@@ -37,7 +37,7 @@ Router.get('/', function(req, res) {
   radius = Math.min(radius, 20);
   
   // 下载图片
-  ModDownload.downloadFiles(paramSrc)
+  MyDownload.downloadFiles(paramSrc)
     .then(function(files) {
       // 处理图片
       ModGenThumb.processImage(files[0]['_contents'], size, radius)
