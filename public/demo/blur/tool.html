@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <title>Tool | Image Process</title>
+  <link href="//g.alicdn.com/kg/m-base/2.0.1/reset.css" rel="styleSheet" type="text/css"/>
+  <style type="text/css">
+    html {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      position: relative;
+      width: 100%;
+      overflow-x: hidden;
+      color: #333;
+      font-family: monospace;
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: 24px;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    a {
+      color: #008cff;
+      text-decoration: underline;
+    }
+
+    img {
+      width: 375px;
+      margin: 10px 0;
+    }
+
+    main {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      display: -webkit-flex;
+      display: flex;
+    }
+
+    #left, #right {
+      -webkit-flex: 1;
+      flex: 1;
+      height: 100%;
+      box-sizing: border-box;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #left {
+      background: #f8f8f8;
+      border-right: 1px solid #ddd;
+    }
+
+    #right {
+    }
+
+    .center-bd {
+      width: 415px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .param-item {
+      padding: 10px 20px;
+    }
+
+    .param-item label {
+      color: #f40;
+      font-size: 14px;
+    }
+
+    .param-item .input-guide {
+      color: #666;
+      font-size: 12px;
+    }
+
+    input,
+    textarea {
+      display: inline-block;
+      width: 100%;
+      height: 36px;
+      padding: 5px 10px;
+      margin: 5px 0;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      box-shadow: none;
+      transition: border-color .2s ease-out;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #008cff;
+    }
+
+    .param-item textarea {
+      height: 50px;
+      resize: vertical;
+    }
+
+    .form-op {
+      padding: 30px 0;
+      text-align: center;
+    }
+
+    #submit {
+      display: inline-block;
+      padding: 10px 25px;
+      color: #fff;
+      font-size: 16px;
+      background: #f40;
+      border: 0;
+      cursor: pointer;
+      outline: none;
+    }
+
+    #submit:hover {
+      background: #f50;
+      transition: background .2s ease-out;
+    }
+
+    #submit.loading {
+      background: #aaa;
+    }
+
+    .section {
+      padding: 10px 20px;
+    }
+
+    .section h3 {
+      color: #f40;
+      font-size: 14px;
+    }
+
+    .section textarea {
+      font-size: 12px;
+      height: 108px;
+      resize: vertical;
+    }
+
+    .section img {
+      width: 375px;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<main>
+  <section id="left">
+    <div class="center-bd">
+      <h2>参数</h2>
+      <div id="param">
+        <div class="param-item">
+          <label for="paramSrc">图片地址 | src</label><br/>
+          <textarea id="paramSrc">https://img.alicdn.com/tps/TB1gU8uKVXXXXXbXVXXXXXXXXXX-1125-525.jpg</textarea>
+          <div class="input-guide">必须是服务器地址;</div>
+        </div>
+        <div class="param-item">
+          <label for="paramRadius">虚化强度 | radius</label><br/>
+          <input id="paramRadius" type="number" size="2" min="1" max="20" value="1">
+          <div class="input-guide">默认值: 1; 最小值: 1; 最大值: 20;</div>
+        </div>
+        <div class="param-item">
+          <label for="paramSize">输出图片尺寸 | size</label><br/>
+          <input id="paramSize" type="number" size="3" min="1" max="100" value="30">
+          <div class="input-guide">默认值: 30; 最小值: 1; 最大值: 100;</div>
+        </div>
+        <div class="form-op">
+          <button id="submit">查看效果</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="right">
+    <div class="center-bd">
+      <h2>效果</h2>
+      <div class="section base64">
+        <h3>Base64</h3>
+        <textarea id="imgBase64"></textarea>
+      </div>
+      <div class="section before">
+        <h3>原图</h3>
+        <img id="imgBefore" src="">
+      </div>
+      <div class="section after">
+        <h3>处理后</h3>
+        <img id="imgAfter" src="">
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="http://g.alicdn.com/kissy/kimi/6.0.1/kimi-min.js"></script>
+<script type="text/javascript">
+  /**
+   * 获取 URL 参数
+   * @param {String} name: 参数名
+   * @return {String}: 参数值/null
+   */
+  function getParam(name) {
+    var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)');
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return decodeURIComponent(r[2]);
+    return '';
+  }
+
+  /**
+   * 清理 CDN 后缀
+   */
+  function removeCDNSubfix(url) {
+    return url.replace(/(_[a-z0-9]+(\.jpg)?)?(_\.webp)?$/i, '');
+  }
+
+  $.ready(function() {
+
+    var $paramSrc = $('#paramSrc'),
+        $paramRadius = $('#paramRadius'),
+        $paramSize = $('#paramSize'),
+        $submit = $('#submit');
+
+    var $imgBase64 = $('#imgBase64'),
+        $imgBefore = $('#imgBefore'),
+        $imgAfter = $('#imgAfter');
+
+    /**
+     * 生成缩略图
+     */
+    function genBlurThumbByAjax() {
+      var param = {
+        src: $paramSrc.val(),
+        radius: $paramRadius.val(),
+        size: $paramSize.val()
+      };
+
+      $.jsonp({
+        url: '../../blur',
+        type: 'GET',
+        data: param,
+        timeout: 10,
+        success: function(result) {
+          if (result.success) {
+            render(result);
+          } else {
+            alert(result.message + '\n' + result.errMessage);
+          }
+          $submit.removeClass('loading');
+        },
+        error: function(err) {
+          alert('出错了!');
+          $submit.removeClass('loading');
+        }
+      });
+    }
+
+    /**
+     * 清空
+     */
+    function clear() {
+      $imgBase64.val('');
+      $imgBefore.attr('src', '');
+      $imgAfter.attr('src', '');
+    }
+
+    /**
+     * 渲染
+     */
+    function render(data) {
+      $imgBase64.val(data.imgDataURL);
+      $imgBefore.attr('src', data.src);
+      $imgAfter.attr('src', data.imgDataURL);
+    }
+
+    /**
+     * 注册事件
+     */
+    function addEvent() {
+      // 提交
+      $submit.on('click', function(e) {
+        if ($submit.hasClass('loading')) {
+          return;
+        }
+        $submit.addClass('loading');
+        clear();
+        genBlurThumbByAjax();
+      });
+    }
+
+    /**
+     * 启动
+     */
+    function setup() {
+      addEvent();
+      $submit.fire('click');
+    }
+
+    setup();
+
+  });
+</script>
+</body>
+</html>

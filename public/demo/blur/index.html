@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <title>Image Process</title>
+  <link href="//g.alicdn.com/kg/m-base/2.0.1/reset.css" rel="styleSheet" type="text/css"/>
+  <style type="text/css">
+    html {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      width: 100%;
+      overflow-x: hidden;
+      font-family: monospace;
+      line-height: 1.5;
+    }
+
+    main {
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    h2 {
+      font-size: 24px;
+    }
+
+    a {
+      color: #008cff;
+      text-decoration: underline;
+    }
+
+    img {
+      width: 375px;
+      margin: 10px 0;
+    }
+
+    #origin {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #after {
+      margin-top: 20px;
+    }
+
+    .item-list {
+      overflow: hidden;
+    }
+
+    .item {
+      float: left;
+      width: 500px;
+    }
+  </style>
+</head>
+
+<body>
+
+<main>
+  <section id="origin">
+    <h2>传入图片</h2>
+    <p>
+      <a id="J_OriginImgHref" href="" target="_blank"></a>
+    </p>
+    <p>
+      <img id="J_OriginImg" src="">
+    </p>
+  </section>
+
+  <section id="after">
+    <h2>处理后</h2>
+    <ul class="item-list">
+
+    </ul>
+  </section>
+</main>
+
+<script src="http://g.alicdn.com/kissy/kimi/6.0.1/kimi-min.js"></script>
+<script type="text/javascript">
+  /**
+   * 获取 URL 参数
+   * @param {String} name: 参数名
+   * @return {String}: 参数值/null
+   */
+  function getParam(name) {
+    var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)');
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return decodeURIComponent(r[2]);
+    return '';
+  }
+
+  /**
+   * 清理 CDN 后缀
+   */
+  function removeCDNSubfix(url) {
+    return url.replace(/(_[a-z0-9]+(\.jpg)?)?(_\.webp)?$/i, '');
+  }
+
+  $.ready(function() {
+    // 原图地址
+    var originImgUrl = getParam('src') || 'https://img.alicdn.com/tps/TB1gU8uKVXXXXXbXVXXXXXXXXXX-1125-525.jpg';
+    // 移除后缀
+    originImgUrl = removeCDNSubfix(originImgUrl);
+
+    // 渲染原图
+    $('#J_OriginImgHref').attr('href', originImgUrl).html(originImgUrl);
+    $('#J_OriginImg').attr('src', originImgUrl);
+
+    // 参数
+    var params = [
+      {
+        src: originImgUrl,
+        radius: 1,
+        size: 30
+      },
+      {
+        src: originImgUrl,
+        radius: 3,
+        size: 30
+      },
+      {
+        src: originImgUrl,
+        radius: 1,
+        size: 40
+      },
+      {
+        src: originImgUrl,
+        radius: 1,
+        size: 100
+      }
+    ];
+
+    /**
+     * 生成缩略图
+     */
+    function genBlurThumbByAjax(param) {
+      $.jsonp({
+        url: '../../blur',
+        type: 'GET',
+        data: param,
+        timeout: 10,
+        success: function(result) {
+          render(result);
+        },
+        error: function(err) {
+          error && error(err);
+        }
+      });
+    }
+
+    /**
+     * 渲染
+     */
+    function render(data) {
+      var html;
+
+      if (data.success) {
+        html = '<li class="item">'
+            + '<p>radius: ' + data.radius + '</p>'
+            + '<p>size: ' + data.size + '</p>'
+            + '<p>src: ' + '<a href="' + data.src + '" target="_blank">open</a>' + '</p>'
+            + '<p><img src="' + data.imgDataURL + '"/></p>'
+            + '</li>';
+      } else {
+        html = '<li>'
+            + '<p>message: ' + data.message + '</p>'
+            + '<p>errMessage: ' + data.errMessage + '</p>'
+            + '</li>';
+      }
+
+      $('.item-list').append(html);
+    }
+
+    /**
+     * 启动
+     */
+    function start() {
+      var timer = setInterval(function() {
+        var data = params.shift();
+        genBlurThumbByAjax(data);
+
+        if (!params.length) {
+          clearInterval(timer);
+        }
+      }, 300);
+    }
+
+    start();
+
+  });
+</script>
+</body>
+</html>
