@@ -64,7 +64,7 @@
 
 <main>
   <section id="origin">
-    <h2>传入图片</h2>
+    <h2>Before</h2>
     <p>
       <a id="J_OriginImgHref" href="" target="_blank"></a>
     </p>
@@ -74,7 +74,7 @@
   </section>
 
   <section id="after">
-    <h2>处理后</h2>
+    <h2>After</h2>
     <ul class="item-list">
 
     </ul>
@@ -95,18 +95,9 @@
     return '';
   }
 
-  /**
-   * 清理 CDN 后缀
-   */
-  function removeCDNSubfix(url) {
-    return url.replace(/(_[a-z0-9]+(\.jpg)?)?(_\.webp)?$/i, '');
-  }
-
   $.ready(function() {
     // 原图地址
-    var originImgUrl = getParam('src') || 'https://img.alicdn.com/tps/TB1gU8uKVXXXXXbXVXXXXXXXXXX-1125-525.jpg';
-    // 移除后缀
-    originImgUrl = removeCDNSubfix(originImgUrl);
+    var originImgUrl = getParam('src') || 'http://s.cn.bing.net/az/hprichbg/rb/RockyFog_ZH-CN9992953522_1366x768.jpg';
 
     // 渲染原图
     $('#J_OriginImgHref').attr('href', originImgUrl).html(originImgUrl);
@@ -116,22 +107,22 @@
     var params = [
       {
         src: originImgUrl,
-        radius: 1,
+        sigma: 0.1,
         size: 30
       },
       {
         src: originImgUrl,
-        radius: 3,
+        sigma: 1,
         size: 30
       },
       {
         src: originImgUrl,
-        radius: 1,
-        size: 40
+        sigma: 1,
+        size: 50
       },
       {
         src: originImgUrl,
-        radius: 1,
+        sigma: 2,
         size: 100
       }
     ];
@@ -162,7 +153,7 @@
 
       if (data.success) {
         html = '<li class="item">'
-            + '<p>radius: ' + data.radius + '</p>'
+            + '<p>sigma: ' + data.sigma + '</p>'
             + '<p>size: ' + data.size + '</p>'
             + '<p>src: ' + '<a href="' + data.src + '" target="_blank">open</a>' + '</p>'
             + '<p><img src="' + data.imgDataURL + '"/></p>'
@@ -188,7 +179,7 @@
         if (!params.length) {
           clearInterval(timer);
         }
-      }, 300);
+      }, 150);
     }
 
     start();

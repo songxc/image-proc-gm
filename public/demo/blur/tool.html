@@ -166,22 +166,22 @@
       <h2>参数</h2>
       <div id="param">
         <div class="param-item">
-          <label for="paramSrc">图片地址 | src</label><br/>
-          <textarea id="paramSrc">https://img.alicdn.com/tps/TB1gU8uKVXXXXXbXVXXXXXXXXXX-1125-525.jpg</textarea>
-          <div class="input-guide">必须是服务器地址;</div>
+          <label for="paramSrc">Input Image URL | src</label><br/>
+          <textarea id="paramSrc">http://s.cn.bing.net/az/hprichbg/rb/RockyFog_ZH-CN9992953522_1366x768.jpg</textarea>
+          <div class="input-guide">must be a server path;</div>
         </div>
         <div class="param-item">
-          <label for="paramRadius">虚化强度 | radius</label><br/>
-          <input id="paramRadius" type="number" size="2" min="1" max="20" value="1">
-          <div class="input-guide">默认值: 1; 最小值: 1; 最大值: 20;</div>
+          <label for="paramSigma">Standard Deviation | sigma</label><br/>
+          <input id="paramSigma" type="text" size="2" min="0" max="10" value="0.1">
+          <div class="input-guide">default: 0.1; minimum: 0.1; maximum: 7;</div>
         </div>
         <div class="param-item">
-          <label for="paramSize">输出图片尺寸 | size</label><br/>
+          <label for="paramSize">Output Image Size | size</label><br/>
           <input id="paramSize" type="number" size="3" min="1" max="100" value="30">
-          <div class="input-guide">默认值: 30; 最小值: 1; 最大值: 100;</div>
+          <div class="input-guide">default: 30; minimum: 1; maximum: 100;</div>
         </div>
         <div class="form-op">
-          <button id="submit">查看效果</button>
+          <button id="submit">check</button>
         </div>
       </div>
     </div>
@@ -189,17 +189,17 @@
 
   <section id="right">
     <div class="center-bd">
-      <h2>效果</h2>
+      <h2>Result</h2>
       <div class="section base64">
         <h3>Base64</h3>
         <textarea id="imgBase64"></textarea>
       </div>
       <div class="section before">
-        <h3>原图</h3>
+        <h3>Before</h3>
         <img id="imgBefore" src="">
       </div>
       <div class="section after">
-        <h3>处理后</h3>
+        <h3>After</h3>
         <img id="imgAfter" src="">
       </div>
     </div>
@@ -230,7 +230,7 @@
   $.ready(function() {
 
     var $paramSrc = $('#paramSrc'),
-        $paramRadius = $('#paramRadius'),
+        $paramSigma = $('#paramSigma'),
         $paramSize = $('#paramSize'),
         $submit = $('#submit');
 
@@ -244,7 +244,7 @@
     function genBlurThumbByAjax() {
       var param = {
         src: $paramSrc.val(),
-        radius: $paramRadius.val(),
+        sigma: $paramSigma.val(),
         size: $paramSize.val()
       };
 
@@ -292,6 +292,11 @@
     function addEvent() {
       // 提交
       $submit.on('click', function(e) {
+        // 校验
+        if (isNaN($paramSigma.val())) {
+          alert('sigma 参数必须为 float 类型!');
+          return;
+        }
         if ($submit.hasClass('loading')) {
           return;
         }

@@ -1,5 +1,6 @@
 var Express = require('express');
 var Router = Express.Router();
+var Del = require('delete');
 var ModGenThumb = require('../mods/blur/index');
 var MyDownload = require('../common/download');
 
@@ -10,8 +11,8 @@ Router.get('/', function(req, res) {
   var paramSrc = req.query.src;
   // 输出图片尺寸
   var paramSize = req.query.size;
-  // 虚化程度
-  var paramRadius = req.query.radius;
+  // 标准偏移量
+  var paramSigma = req.query.sigma;
 
   // 未传入图片地址
   if (!paramSrc) {
@@ -31,16 +32,18 @@ Router.get('/', function(req, res) {
   // 控制最大值
   size = Math.min(size, 100);
 
-  // 模糊半径
-  var radius = /^[1-9]\d*$/g.test(paramRadius) ? parseInt(paramRadius) : 1;
+  // 标准偏移量
+  var sigma = !isNaN(paramSigma) ? parseFloat(paramSigma) : 0.1;
+  // 控制最小值
+  sigma = Math.max(sigma, 0.1);
   // 控制最大值
-  radius = Math.min(radius, 20);
-  
+  sigma = Math.min(sigma, 7);
+
   // 下载图片
   MyDownload.downloadFiles(paramSrc)
-    .then(function(files) {
+    .then(function(filePath) {
       // 处理图片
-      ModGenThumb.processImage(files[0]['_contents'], size, radius)
+      ModGenThumb.processImage(filePath, size, sigma)
         .then(function(imgDataURL) {
           // 输出到客户端
           res.render('blur', {
@@ -50,9 +53,13 @@ Router.get('/', function(req, res) {
               success: true,
               src: paramSrc,
               size: size,
-              radius: radius,
+              sigma: sigma,
               imgDataURL: imgDataURL
             }
+          });
+          // 删除图片
+          Del(filePath, function(err) {
+            if (err) throw err;
           });
         })
         .catch(function(err) {
@@ -61,12 +68,16 @@ Router.get('/', function(req, res) {
             callback: paramCallback,
             data: {
               success: false,
-              message: '下载图片时出错',
+              message: '处理图片时出错',
               errMessage: err.message,
               src: paramSrc,
               size: size,
-              radius: radius
+              sigma: sigma
             }
+          });
+          // 删除图片
+          Del(filePath, function(err) {
+            if (err) throw err;
           });
         });
     })
@@ -76,11 +87,11 @@ Router.get('/', function(req, res) {
         callback: paramCallback,
         data: {
           success: false,
-          message: '传入的图片地址无效',
+          message: '下载图片时出错',
           errMessage: err.message,
           src: paramSrc,
           size: size,
-          radius: radius
+          sigma: sigma
         }
       });
     });
