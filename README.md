@@ -1,6 +1,6 @@
 # Image Placeholder Generator Base on GraphicsMagick
 
-![Image Placeholder Tool](http://songxc.github.io/images/image-placeholder-tool-gm.jpg)
+![Image Placeholder Tool](http://songxc.github.io/images/image-proc-with-gm.jpg)
 
 ## Introduction
 
